@@ -38,7 +38,7 @@ O [LoY] CASADOS é um sistema construído com Laravel e Filament para gerenciar 
 - **SQLite** - Banco de dados
 - **Tailwind CSS** - Estilização
 
-## Instalação
+## Instalação Local
 
 ```bash
 # Clone o repositório
@@ -63,9 +63,125 @@ npm run build
 php artisan serve
 ```
 
-## Acesso
+## Deploy com Docker (Recomendado)
 
-Acesse o painel administrativo em: `http://localhost:8000/admin`
+### Build e Run Local
+
+```bash
+# Build da imagem
+docker build -t laracheckin:latest .
+
+# Run do container
+docker run -d \
+  -p 8080:80 \
+  --name laracheckin \
+  -e APP_KEY=base64:YOUR_APP_KEY_HERE \
+  -e APP_URL=http://your-domain.com \
+  -v $(pwd)/database:/var/www/html/database \
+  laracheckin:latest
+```
+
+### Hospedagens Econômicas Recomendadas
+
+#### 1. **Railway.app** (Mais Fácil - RECOMENDADO)
+- **Custo**: $5/mês (ou grátis com limitações)
+- **Deploy**: Push no GitHub e conecta automaticamente
+- **Vantagens**: Configuração automática, SSL grátis, domínio incluso
+- **Deploy**:
+  1. Crie conta em https://railway.app
+  2. Conecte seu repositório GitHub
+  3. Railway detecta o Dockerfile automaticamente
+  4. Configure as variáveis de ambiente
+  5. Deploy automático!
+
+```bash
+# Adicione railway.json na raiz do projeto
+{
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "/usr/local/bin/entrypoint.sh",
+    "healthcheckPath": "/",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
+```
+
+#### 2. **Render.com**
+- **Custo**: $7/mês (plan individual)
+- **Vantagens**: SSL grátis, banco de dados PostgreSQL incluso
+- **Deploy**: Push no GitHub e conecta
+
+#### 3. **Fly.io**
+- **Custo**: ~$3-5/mês (256MB RAM)
+- **Vantagens**: Múltiplas regiões, escala automática
+- **Deploy**:
+```bash
+# Instale o CLI
+curl -L https://fly.io/install.sh | sh
+
+# Configure o projeto
+fly launch
+
+# Deploy
+fly deploy
+```
+
+#### 4. **DigitalOcean App Platform**
+- **Custo**: $5/mês
+- **Vantagens**: Infraestrutura confiável, fácil escalar
+- **Deploy**: Conecte o GitHub ou Docker Hub
+
+#### 5. **Heroku**
+- **Custo**: $7/mês (Eco Dyno)
+- **Vantagens**: Tradicional e estável
+- **Desvantagem**: Mais caro que as alternativas
+
+### Recomendação Final: Railway.app
+
+**Por quê?**
+- ✅ Setup mais simples (2 minutos)
+- ✅ Detecção automática do Dockerfile
+- ✅ SSL e domínio grátis (.up.railway.app)
+- ✅ Logs em tempo real
+- ✅ Volume persistente para SQLite
+- ✅ $5/mês com 500 horas de uso
+- ✅ Pode usar domínio customizado
+
+### Passo a passo Railway:
+
+1. **Push do código para GitHub**
+```bash
+git add .
+git commit -m "Add Docker configuration"
+git push origin main
+```
+
+2. **Configure Railway**
+   - Acesse https://railway.app
+   - Clique em "Start a New Project"
+   - Selecione "Deploy from GitHub repo"
+   - Escolha seu repositório
+   - Railway detecta o Dockerfile automaticamente
+
+3. **Configurar Variáveis de Ambiente**
+   - Na aba "Variables", adicione:
+     - `APP_KEY` (gere com `php artisan key:generate --show`)
+     - `APP_URL` (será fornecido pelo Railway)
+     - `APP_ENV=production`
+     - `APP_DEBUG=false`
+
+4. **Deploy**
+   - O deploy acontece automaticamente
+   - Acesse via URL fornecida (.up.railway.app)
+
+5. **Criar Usuário Admin**
+```bash
+# No Railway CLI ou interface web, execute:
+railway run php artisan make:filament-user
+```
 
 ## Estrutura do Banco de Dados
 
@@ -77,6 +193,50 @@ Acesse o painel administrativo em: `http://localhost:8000/admin`
 
 ### Check-ins
 - `id`, `player_id`, `event_id`, `checked_in_at`, `timestamps`
+
+## Acesso
+
+**Local**: `http://localhost:8000/admin`  
+**Docker Local**: `http://localhost:8080/admin`  
+**Produção**: `https://seu-dominio/admin`
+
+## Manutenção
+
+### Backup do Banco de Dados
+```bash
+# Copiar banco do container
+docker cp laracheckin:/var/www/html/database/database.sqlite ./backup-$(date +%Y%m%d).sqlite
+
+# No Railway, baixar via interface ou CLI
+railway run cat database/database.sqlite > backup.sqlite
+```
+
+### Criar Usuário Admin
+```bash
+# Local
+php artisan make:filament-user
+
+# Docker
+docker exec -it laracheckin php artisan make:filament-user
+
+# Railway
+railway run php artisan make:filament-user
+```
+
+## Segurança
+
+- ✅ Banco SQLite com permissões restritas
+- ✅ Sem portas expostas desnecessárias
+- ✅ SSL/HTTPS habilitado (via Railway/Render)
+- ✅ Variáveis de ambiente protegidas
+- ✅ APP_DEBUG=false em produção
+
+## Suporte
+
+Para dúvidas sobre deploy ou configuração, consulte a documentação das plataformas:
+- Railway: https://docs.railway.app
+- Fly.io: https://fly.io/docs
+- Render: https://render.com/docs
 
 ## Licença
 
