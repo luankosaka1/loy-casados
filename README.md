@@ -1,59 +1,83 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# [LoY] CASADOS - Check-in System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de gerenciamento de check-ins para jogadores com pontuação e recompensas.
 
-## About Laravel
+## Sobre o Projeto
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+O [LoY] CASADOS é um sistema construído com Laravel e Filament para gerenciar check-ins de jogadores em eventos, calcular pontuações baseadas em power e pontos, e gerenciar recompensas semanais.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Funcionalidades
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Gerenciamento de Players
+- Cadastro de jogadores com nome e power
+- Importação em massa via CSV (nome e power)
+- Atualização automática de players existentes na importação
+- Exibição do player com maior power no dashboard
 
-## Learning Laravel
+### Gerenciamento de Eventos
+- Cadastro de eventos com nome e pontos
+- Vinculação com check-ins
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Sistema de Check-ins
+- Registro de check-ins vinculando players e eventos
+- Data e hora de check-in
+- Interface para gerenciamento completo
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Análises e Relatórios
+- **Weekly Player Power**: Soma do power do player multiplicado pela quantidade de check-ins por semana
+- **Weekly Player Score**: Soma do power do player multiplicado pelos pontos dos eventos por semana
+- **Rewards**: Pontuação total de cada player (soma de pontos de check-ins × power do player)
+  - Filtro por período de check-in
+  - Filtro padrão para a semana atual
+  - Cálculo: `(player.power / 100000) × sum(event.points)` com 2 casas decimais
 
-## Laravel Sponsors
+## Tecnologias
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Laravel 11.x** - Framework PHP
+- **Filament 3.x** - Painel administrativo
+- **SQLite** - Banco de dados
+- **Tailwind CSS** - Estilização
 
-### Premium Partners
+## Instalação
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+# Clone o repositório
+git clone <repository-url>
+cd laracheckin
 
-## Contributing
+# Instale as dependências
+composer install
+npm install
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Configure o ambiente
+cp .env.example .env
+php artisan key:generate
 
-## Code of Conduct
+# Execute as migrações
+php artisan migrate
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Compile os assets
+npm run build
 
-## Security Vulnerabilities
+# Inicie o servidor
+php artisan serve
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Acesso
 
-## License
+Acesse o painel administrativo em: `http://localhost:8000/admin`
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Estrutura do Banco de Dados
+
+### Players
+- `id`, `name`, `power`, `timestamps`
+
+### Events
+- `id`, `name`, `points`, `timestamps`
+
+### Check-ins
+- `id`, `player_id`, `event_id`, `checked_in_at`, `timestamps`
+
+## Licença
+
+Este projeto é de código fechado e proprietário.
