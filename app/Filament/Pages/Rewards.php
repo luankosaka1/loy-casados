@@ -24,6 +24,7 @@ class Rewards extends Page implements HasTable
     protected static string|UnitEnum|null $navigationGroup = 'Rewards';
     protected static ?string $title = 'Rewards';
     protected static ?string $slug = 'rewards';
+    protected static ?int $navigationSort = 1;
 
     protected string $view = 'filament.pages.rewards';
 
