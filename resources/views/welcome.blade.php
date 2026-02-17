@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoY - CASADO - Drop System</title>
+    <title>LoY - CASADOS - Drop System</title>
     <style>
         * {
             margin: 0;
@@ -136,7 +136,7 @@
 
     <div class="container">
         <h1 class="title">⚡ DROP SYSTEM ⚡</h1>
-        <p class="subtitle">LoY - CASADO</p>
+        <p class="subtitle">LoY - CASADOS</p>
 
         <div class="buttons-container">
             <a href="/admin/login" class="login-btn admin-btn">🎮 Admin Login</a>
