@@ -104,6 +104,12 @@ class ManagePlayers extends ManageRecords
                     ['power' => (int) $power],
                 );
 
+                // Gera password se não existir
+                if (empty($player->password)) {
+                    $player->password = Player::generatePassword();
+                    $player->save();
+                }
+
                 if ($player->wasRecentlyCreated) {
                     $created++;
                 } else {

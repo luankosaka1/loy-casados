@@ -36,6 +36,11 @@ class PlayerResource extends Resource
                 TextInput::make('discord')
                     ->maxLength(255)
                     ->label('Discord'),
+                TextInput::make('password')
+                    ->maxLength(255)
+                    ->label('Password')
+                    ->disabled()
+                    ->helperText('Password is auto-generated'),
             ]);
     }
 
@@ -53,6 +58,12 @@ class PlayerResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('Discord'),
+                TextColumn::make('password')
+                    ->label('Password')
+                    ->formatStateUsing(fn ($state) => str_repeat('•', 10))
+                    ->copyable()
+                    ->copyableState(fn ($record) => $record->password)
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
