@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Drop;
 use App\Models\PlayerDropPreference;
+use App\Models\PlayerDropReward;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -25,8 +26,13 @@ class PlayerRedeemRewardsController extends Controller
         // Calcular score de recompensa (power / 100000 * pontos)
         $rewardScore = ($player->power / 100000) * $totalPoints;
 
-        // Buscar todas as drops disponíveis
-        $drops = Drop::all();
+        // Buscar todas as drops disponíveis (exclui drops já registrados em player_drop_rewards)
+        $rewardedDropIds = PlayerDropReward::query()
+            ->distinct()
+            ->pluck('drop_id');
+        $drops = Drop::query()
+            ->whereNotIn('id', $rewardedDropIds)
+            ->get();
 
         // Buscar preferências do player
         $preferences = PlayerDropPreference::where('player_id', $player->id)

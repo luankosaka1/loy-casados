@@ -4,6 +4,7 @@ namespace App\Filament\Resources\DropResource;
 
 use App\Filament\Resources\DropResource\Pages\ManageDrops;
 use App\Models\Drop;
+use App\Models\PlayerDropReward;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;

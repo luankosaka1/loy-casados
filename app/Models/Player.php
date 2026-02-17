@@ -43,4 +43,9 @@ class Player extends Model
     {
         return $this->hasMany(PlayerDropPreference::class)->orderBy('priority');
     }
+
+    public function dropRewards(): HasMany
+    {
+        return $this->hasMany(PlayerDropReward::class);
+    }
 }
