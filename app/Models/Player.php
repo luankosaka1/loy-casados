@@ -38,4 +38,9 @@ class Player extends Model
     {
         return $this->hasMany(Checkin::class);
     }
+
+    public function dropPreferences(): HasMany
+    {
+        return $this->hasMany(PlayerDropPreference::class)->orderBy('priority');
+    }
 }

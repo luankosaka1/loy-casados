@@ -14,15 +14,23 @@
                 <h1 class="text-3xl font-bold">LoY <span class="text-purple-400">CASADOS</span></h1>
                 <p class="text-purple-300 text-sm">Player Dashboard</p>
             </div>
-            <form method="POST" action="{{ route('player.logout') }}" class="inline">
-                @csrf
-                <button
-                    type="submit"
-                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition"
+            <div class="flex gap-4">
+                <a
+                    href="{{ route('player.redeem-rewards') }}"
+                    class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold py-2 px-6 rounded-lg transition"
                 >
-                    Logout
-                </button>
-            </form>
+                    🎁 Redeem the Rewards
+                </a>
+                <form method="POST" action="{{ route('player.logout') }}" class="inline">
+                    @csrf
+                    <button
+                        type="submit"
+                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition"
+                    >
+                        Logout
+                    </button>
+                </form>
+            </div>
         </div>
     </nav>
 
