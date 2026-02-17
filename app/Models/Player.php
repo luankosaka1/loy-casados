@@ -10,6 +10,7 @@ class Player extends Model
     protected $fillable = [
         'name',
         'power',
+        'discord',
     ];
 
     public function checkins(): HasMany

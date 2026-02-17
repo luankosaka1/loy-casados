@@ -32,7 +32,8 @@ class EventResource extends Resource
                 TextInput::make('points')
                     ->required()
                     ->numeric()
-                    ->integer(),
+                    ->step(0.01)
+                    ->minValue(0),
             ]);
     }
 
@@ -45,7 +46,7 @@ class EventResource extends Resource
                     ->sortable(),
                 TextColumn::make('points')
                     ->sortable()
-                    ->numeric(),
+                    ->numeric(decimalPlaces: 2),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

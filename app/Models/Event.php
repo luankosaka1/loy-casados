@@ -12,6 +12,10 @@ class Event extends Model
         'points',
     ];
 
+    protected $casts = [
+        'points' => 'float',
+    ];
+
     public function checkins(): HasMany
     {
         return $this->hasMany(Checkin::class);

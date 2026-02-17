@@ -33,6 +33,9 @@ class PlayerResource extends Resource
                     ->required()
                     ->numeric()
                     ->integer(),
+                TextInput::make('discord')
+                    ->maxLength(255)
+                    ->label('Discord'),
             ]);
     }
 
@@ -46,6 +49,10 @@ class PlayerResource extends Resource
                 TextColumn::make('power')
                     ->sortable()
                     ->numeric(),
+                TextColumn::make('discord')
+                    ->searchable()
+                    ->sortable()
+                    ->label('Discord'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
