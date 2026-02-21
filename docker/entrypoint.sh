@@ -2,10 +2,19 @@
 
 set -e
 
+echo "=== Laravel Container Startup ==="
+
 # Create supervisor log directory
 mkdir -p /var/log/supervisor
 
-# Create .env file if it doesn't exist
+# Create cache directories with proper permissions first
+mkdir -p /var/www/html/storage/framework/cache
+mkdir -p /var/www/html/storage/framework/sessions
+mkdir -p /var/www/html/storage/framework/views
+mkdir -p /var/www/html/storage/logs
+mkdir -p /var/www/html/bootstrap/cache
+
+# Create .env file BEFORE any artisan commands
 if [ ! -f /var/www/html/.env ]; then
     echo "Creating .env from environment variables..."
     {
@@ -28,24 +37,18 @@ if [ ! -f /var/www/html/.env ]; then
         echo "LOG_LEVEL=${LOG_LEVEL:-info}"
         echo "MAIL_MAILER=smtp"
         echo "MAIL_FROM_ADDRESS=hello@example.com"
-        echo "MAIL_FROM_NAME=${APP_NAME:-LoY - CASADOS}"
+        echo "MAIL_FROM_NAME=\${APP_NAME}"
     } > /var/www/html/.env
-    chown www-data:www-data /var/www/html/.env
-    chmod 644 /var/www/html/.env
+    echo ".env file created successfully!"
 fi
-
-# Create cache directories with proper permissions first
-mkdir -p /var/www/html/storage/framework/cache
-mkdir -p /var/www/html/storage/framework/sessions
-mkdir -p /var/www/html/storage/framework/views
-mkdir -p /var/www/html/storage/logs
-mkdir -p /var/www/html/bootstrap/cache
 
 # Set proper permissions for all storage directories
 chown -R www-data:www-data /var/www/html/storage
 chmod -R 775 /var/www/html/storage
 chown -R www-data:www-data /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/bootstrap/cache
+chown www-data:www-data /var/www/html/.env
+chmod 644 /var/www/html/.env
 
 # Wait for database directory to be writable
 while [ ! -w /var/www/html/database ]; do
@@ -54,6 +57,7 @@ while [ ! -w /var/www/html/database ]; do
 done
 
 # Clear all caches (ignore errors)
+echo "Clearing caches..."
 php artisan config:clear 2>/dev/null || true
 php artisan cache:clear 2>/dev/null || true
 php artisan view:clear 2>/dev/null || true
@@ -61,7 +65,7 @@ php artisan route:clear 2>/dev/null || true
 
 # Run migrations if needed
 echo "Running migrations..."
-php artisan migrate --force --no-interaction 2>&1 | tail -5
+php artisan migrate --force --no-interaction
 
 # Cache config, routes and views
 echo "Caching configuration..."
@@ -73,7 +77,7 @@ php artisan view:cache
 echo "Optimizing application..."
 php artisan optimize
 
-echo "Application ready!"
+echo "=== Application ready! ==="
 echo "Starting supervisor..."
 
 # Start supervisor
