@@ -1,12 +1,33 @@
 FROM php:8.2-fpm-alpine
 
+# Install build dependencies and compile SQLite from source
+RUN apk add --no-cache --virtual .build-deps \
+    gcc \
+    g++ \
+    make \
+    autoconf \
+    pkgconfig \
+    wget \
+    && mkdir -p /tmp/sqlite \
+    && cd /tmp/sqlite \
+    && wget https://www.sqlite.org/2024/sqlite-autoconf-3450100.tar.gz \
+    && tar xzf sqlite-autoconf-3450100.tar.gz \
+    && cd sqlite-autoconf-3450100 \
+    && ./configure --prefix=/usr/local \
+    && make \
+    && make install \
+    && cd / \
+    && rm -rf /tmp/sqlite
+
+# Update library cache to use the new SQLite
+RUN ldconfig /usr/local/lib || true
+
 # Install system dependencies
 RUN apk add --no-cache \
     nginx \
     supervisor \
     nodejs \
     npm \
-    sqlite \
     git \
     zip \
     unzip \
@@ -16,8 +37,15 @@ RUN apk add --no-cache \
     libxml2-dev \
     openssl
 
-# Install PHP extensions
+# Set environment to use the new SQLite
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+
+# Install PHP extensions with the new SQLite
 RUN docker-php-ext-install pdo pdo_sqlite mbstring exif pcntl bcmath gd
+
+# Clean up build dependencies but keep runtime libraries
+RUN apk del .build-deps
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
