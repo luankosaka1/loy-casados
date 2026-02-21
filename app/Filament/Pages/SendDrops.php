@@ -8,6 +8,7 @@ use App\Models\PlayerDropPreference;
 use App\Models\PlayerDropReward;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
@@ -26,6 +27,9 @@ class SendDrops extends Page implements HasTable
     protected static ?string $slug = 'send-drops';
 
     protected string $view = 'filament.pages.send-drops';
+
+    public ?\DateTime $startDate = null;
+    public ?\DateTime $endDate = null;
 
     public function table(Table $table): Table
     {
@@ -73,12 +77,27 @@ class SendDrops extends Page implements HasTable
                 ->label('Confirm Send')
                 ->icon('heroicon-o-paper-airplane')
                 ->color('success')
-                ->action(function () {
+                ->form([
+                    DatePicker::make('startDate')
+                        ->label('Start Date')
+                        ->default(fn () => now()->subDays(7))
+                        ->nullable(),
+                    DatePicker::make('endDate')
+                        ->label('End Date')
+                        ->default(fn () => now())
+                        ->nullable(),
+                ])
+                ->action(function (array $data) {
+                    $this->startDate = $data['startDate']
+                        ? \Carbon\Carbon::parse($data['startDate'])->startOfDay()
+                        : null;
+                    $this->endDate = $data['endDate']
+                        ? \Carbon\Carbon::parse($data['endDate'])->endOfDay()
+                        : null;
                     $this->distributeDrops();
                 })
-                ->requiresConfirmation()
                 ->modalHeading('Distribute Drops to Players')
-                ->modalDescription('This will distribute drops to all players based on their reward score and drop preferences. Players will receive their highest priority drop that hasn\'t been distributed yet.')
+                ->modalDescription('Configure the date range for calculating player scores and then distribute drops based on their reward score and drop preferences.')
                 ->modalSubmitActionLabel('Distribute'),
         ];
     }
@@ -92,9 +111,18 @@ class SendDrops extends Page implements HasTable
 
             // Calcular reward score para cada player e criar lista ordenada
             $playersWithScores = $allPlayers->map(function ($player) {
-                $totalPoints = $player->checkins()
-                    ->join('events', 'events.id', '=', 'checkins.event_id')
-                    ->sum('events.points');
+                $query = $player->checkins()
+                    ->join('events', 'events.id', '=', 'checkins.event_id');
+
+                if ($this->startDate && $this->endDate) {
+                    $query->whereBetween('checkins.created_at', [$this->startDate, $this->endDate]);
+                } elseif ($this->startDate) {
+                    $query->where('checkins.created_at', '>=', $this->startDate);
+                } elseif ($this->endDate) {
+                    $query->where('checkins.created_at', '<=', $this->endDate);
+                }
+
+                $totalPoints = $query->sum('events.points');
 
                 return [
                     'player' => $player,
@@ -102,7 +130,6 @@ class SendDrops extends Page implements HasTable
                 ];
             })->sortByDesc('score')->values();
 
-            // Obter todos os drops e sua quantidade total
             $drops = Drop::all();
             $alreadySentDropIds = PlayerDropReward::query()
                 ->distinct()
