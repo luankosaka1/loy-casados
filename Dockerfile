@@ -12,12 +12,13 @@ RUN apk add --no-cache --virtual .build-deps \
     wget \
     tcl-dev
 
-# Compile and install newer SQLite from source
+# Compile and install newer SQLite from source with session support
 RUN cd /tmp \
     && wget https://www.sqlite.org/2024/sqlite-autoconf-3450100.tar.gz \
     && tar xzf sqlite-autoconf-3450100.tar.gz \
     && cd sqlite-autoconf-3450100 \
-    && CFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1" ./configure --prefix=/usr --enable-shared --enable-static \
+    && CFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 -DSQLITE_ENABLE_SESSION=1 -DSQLITE_ENABLE_PREUPDATE_HOOK=1" \
+       ./configure --prefix=/usr --enable-shared --enable-static \
     && make -j$(nproc) \
     && make install \
     && cd / \
@@ -48,6 +49,9 @@ RUN apk add --no-cache \
 
 # Set PKG_CONFIG_PATH to find the new SQLite
 ENV PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/local/lib/pkgconfig
+# Set environment for Laravel
+ENV APP_ENV=production
+ENV APP_DEBUG=false
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_sqlite mbstring exif pcntl bcmath gd intl zip
@@ -75,6 +79,14 @@ RUN npm install && npm run build
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
+
+# Create all necessary directories with proper permissions
+RUN mkdir -p /var/www/html/storage/framework/cache \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/storage/logs \
+    && chown -R www-data:www-data /var/www/html/storage \
+    && chmod -R 775 /var/www/html/storage
 
 # Create SQLite database directory
 RUN mkdir -p /var/www/html/database && \
