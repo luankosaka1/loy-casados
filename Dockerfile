@@ -12,13 +12,12 @@ RUN apk add --no-cache --virtual .build-deps \
     wget \
     tcl-dev
 
-# Compile and install newer SQLite from source with session extension
+# Compile and install newer SQLite from source
 RUN cd /tmp \
     && wget https://www.sqlite.org/2024/sqlite-autoconf-3450100.tar.gz \
     && tar xzf sqlite-autoconf-3450100.tar.gz \
     && cd sqlite-autoconf-3450100 \
-    && CFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 -DSQLITE_ENABLE_SESSION=1 -DSQLITE_ENABLE_PREUPDATE_HOOK=1" \
-       ./configure --prefix=/usr --enable-shared --enable-static \
+    && CFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1" ./configure --prefix=/usr --enable-shared --enable-static \
     && make -j$(nproc) \
     && make install \
     && cd / \
