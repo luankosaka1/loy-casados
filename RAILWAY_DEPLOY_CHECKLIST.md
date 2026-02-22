@@ -1,4 +1,4 @@
-# 📋 CHECKLIST - Deploy Railway (ATUALIZADO)
+# 📋 CHECKLIST - Deploy Railway (ATUALIZADO - 22/02/2026)
 
 ## ✅ PASSO 1: FAZER GIT COMMIT
 
@@ -10,9 +10,10 @@ git add Dockerfile docker/entrypoint.sh
 
 # Adicionar documentação
 git add RAILWAY_ENVIRONMENT_VARIABLES.md DOCKERFILE_ENTRYPOINT_REVIEW.md
+git add APACHE_MPM_ERROR_FIXED.md
 
 # Fazer commit
-git commit -m "fix: correct dockerfile and entrypoint for railway deploy"
+git commit -m "fix: correct dockerfile, entrypoint and Apache MPM for railway deploy"
 
 # Push
 git push origin main

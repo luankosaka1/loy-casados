@@ -58,6 +58,10 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     dom \
     xml
 
+# Disable conflicting MPM modules and enable only mpm_prefork
+RUN a2dismod mpm_event mpm_worker 2>/dev/null || true \
+    && a2enmod mpm_prefork
+
 # Enable Apache modules
 RUN a2enmod rewrite \
     && a2enmod headers
