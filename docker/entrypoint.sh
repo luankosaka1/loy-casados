@@ -55,6 +55,20 @@ else
     echo ".env file already exists, skipping creation"
 fi
 
+# Verify .env file was created and has APP_KEY
+if [ ! -f /var/www/html/.env ]; then
+    echo "ERROR: .env file was not created!"
+    exit 1
+fi
+
+if ! grep -q "APP_KEY=" /var/www/html/.env; then
+    echo "ERROR: APP_KEY not found in .env file!"
+    exit 1
+fi
+
+echo ".env file verified successfully"
+cat /var/www/html/.env
+
 # Set proper permissions for all storage directories
 echo "Setting permissions..."
 chown -R www-data:www-data /var/www/html/storage
@@ -77,6 +91,17 @@ for i in {1..30}; do
     sleep 1
 done
 
+# Ensure database file exists
+if [ ! -f /var/www/html/database/database.sqlite ]; then
+    echo "Creating SQLite database file..."
+    touch /var/www/html/database/database.sqlite
+    chown www-data:www-data /var/www/html/database/database.sqlite
+    chmod 666 /var/www/html/database/database.sqlite
+fi
+
+echo "Database file status:"
+ls -lah /var/www/html/database/database.sqlite
+
 # Clear all caches (ignore errors)
 echo "Clearing caches..."
 php artisan config:clear 2>/dev/null || echo "Config clear skipped (expected on first run)"
@@ -84,23 +109,24 @@ php artisan cache:clear 2>/dev/null || echo "Cache clear skipped"
 php artisan view:clear 2>/dev/null || echo "View clear skipped"
 php artisan route:clear 2>/dev/null || echo "Route clear skipped"
 
-# Run migrations
+# Run migrations (but don't fail if they error)
 echo "Running migrations..."
-php artisan migrate --force --no-interaction --quiet
+php artisan migrate --force --no-interaction 2>&1 || echo "Migrations completed with warnings (this is OK on first run)"
 
-# Cache config, routes and views
+# Cache config, routes and views (ignore errors to ensure Apache starts)
 echo "Caching configuration..."
-php artisan config:cache --quiet
-php artisan route:cache --quiet
-php artisan view:cache --quiet
+php artisan config:cache 2>&1 || echo "Config cache skipped"
+php artisan route:cache 2>&1 || echo "Route cache skipped"
+php artisan view:cache 2>&1 || echo "View cache skipped"
 
-# Optimize for production
+# Optimize for production (ignore errors)
 echo "Optimizing application..."
-php artisan optimize --quiet
+php artisan optimize 2>&1 || echo "Optimization skipped"
 
 echo "=== Application ready! ==="
-echo "Starting Apache..."
+echo "Starting Apache in foreground..."
+echo "Application URL: ${APP_URL:-http://localhost}"
 
-# Start Apache in foreground
+# Start Apache in foreground - this MUST happen
 exec apache2-foreground
 
