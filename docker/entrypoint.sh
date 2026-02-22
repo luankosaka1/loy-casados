@@ -18,7 +18,7 @@ mkdir -p /var/www/html/bootstrap/cache
 if [ ! -f /var/www/html/.env ]; then
     echo "Creating .env from environment variables..."
     {
-        echo "APP_NAME=${APP_NAME:-LoY - CASADOS}"
+        echo "APP_NAME=\"${APP_NAME:-LoY - CASADOS}\""
         echo "APP_ENV=${APP_ENV:-production}"
         echo "APP_KEY=${APP_KEY:-base64:odTgF9snyWzcdw9Y4TD6ulhSc+rlgeQ8XMBeP8hgFLY=}"
         echo "APP_DEBUG=${APP_DEBUG:-false}"
@@ -37,7 +37,7 @@ if [ ! -f /var/www/html/.env ]; then
         echo "LOG_LEVEL=${LOG_LEVEL:-info}"
         echo "MAIL_MAILER=smtp"
         echo "MAIL_FROM_ADDRESS=hello@example.com"
-        echo "MAIL_FROM_NAME=\${APP_NAME}"
+        echo "MAIL_FROM_NAME=\"${APP_NAME:-LoY - CASADOS}\""
     } > /var/www/html/.env
     echo ".env file created successfully!"
 fi
