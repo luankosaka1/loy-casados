@@ -68,11 +68,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application files
+# Copy application files (but not .env - it will be created at runtime)
 COPY . .
 
+# Create a temporary .env for build time (will be regenerated at runtime)
+RUN echo "APP_ENV=production\nAPP_DEBUG=false\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nDB_CONNECTION=sqlite" > .env
+
 # Install dependencies
-RUN composer install --optimize-autoloader --no-dev
+RUN composer install --optimize-autoloader --no-dev --no-interaction
 RUN npm install && npm run build
 
 # Setup permissions

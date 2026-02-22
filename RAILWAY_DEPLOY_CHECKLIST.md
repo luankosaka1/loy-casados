@@ -1,95 +1,111 @@
-# 📋 Checklist para Deploy no Railway
+# 📋 CHECKLIST - Deploy Railway (ATUALIZADO)
 
-## ✅ Antes do Deploy
-
-- [ ] Verifique se todos os arquivos foram commitados
-- [ ] Execute localmente: `bash test-local.sh`
-- [ ] Teste a página inicial: http://localhost:8000
-- [ ] Verifique se o banco de dados foi criado em `database/database.sqlite`
-- [ ] Confirme que não há erros no terminal
-
-## 📝 Comandos para Deploy
+## ✅ PASSO 1: FAZER GIT COMMIT
 
 ```bash
-# 1. Adicionar arquivos modificados
-git add Dockerfile docker/entrypoint.sh docker/default.conf .env .env.railway
+cd /Users/luan/dev/lab/laracheckin
 
-# 2. Adicionar novos arquivos (documentação e scripts)
-git add ERRO_500_RAILWAY_SOLUCAO.md test-local.sh RAILWAY_DEPLOY_FIX.md RAILWAY_DEPLOY_INSTRUCTIONS.md DEPLOYMENT_COMPLETE.md
+# Adicionar arquivos modificados
+git add Dockerfile docker/entrypoint.sh
 
-# 3. Commit
-git commit -m "fix: resolve 500 error - improve cache init, permissions, and nginx config"
+# Adicionar documentação
+git add RAILWAY_ENVIRONMENT_VARIABLES.md DOCKERFILE_ENTRYPOINT_REVIEW.md
 
-# 4. Push para Railway
+# Fazer commit
+git commit -m "fix: correct dockerfile and entrypoint for railway deploy"
+
+# Push
 git push origin main
 ```
 
-## 🚀 Após o Push
+Railway detectará automaticamente o novo push!
 
-Railway detectará as mudanças automaticamente:
+## ✅ PASSO 2: ADICIONAR VARIÁVEIS NO RAILWAY
 
-1. **Build começa automaticamente** (3-5 minutos)
-2. **Verifique os logs** no Railway dashboard
-3. **Procure por erros** na seção de "Logs"
+**Railway Dashboard → Service → Variables → Raw Editor**
 
-## 🔍 Verificações no Railway Dashboard
+Cole exatamente isto:
 
-### Na seção "Logs":
-```
-✅ Procure por: "Blade templates cached successfully"
-✅ Procure por: "Routes cached successfully"
-✅ Procure por: "Configuration cached successfully"
-❌ Procure por erros: "error", "exception", "500"
-```
-
-### Indicadores de Sucesso:
-- ✅ `[21-Feb-2026 11:18:23] NOTICE: ready to handle connections`
-- ✅ `spawned: 'nginx' with pid 20`
-- ✅ `spawned: 'php-fpm' with pid 21`
-- ✅ `success: nginx entered RUNNING state`
-- ✅ `success: php-fpm entered RUNNING state`
-
-## 🌐 Teste a Aplicação
-
-1. **Acesse a URL do Railway** (ex: https://your-app.railway.app)
-2. **Verifique a página inicial** - deve carregar sem erros
-3. **Teste o login** - acesse `/player/login`
-4. **Monitore os logs** - observe requisições chegarem
-
-## ⚠️ Se Ainda Houver Erro 500
-
-### 1. Verifique o Log Detalhado
-```
-Vá em Railway Dashboard → Aplicação → Logs
-Procure por mensagens de erro específicas do PHP/Laravel
+```env
+APP_NAME=LoY - CASADOS
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:odTgF9snyWzcdw9Y4TD6ulhSc+rlgeQ8XMBeP8hgFLY=
+APP_URL=https://seu-projeto.railway.app
+LOG_CHANNEL=stack
+LOG_LEVEL=info
+DB_CONNECTION=sqlite
+DB_DATABASE=/var/www/html/database/database.sqlite
+SESSION_DRIVER=database
+CACHE_STORE=database
+BROADCAST_CONNECTION=log
+QUEUE_CONNECTION=database
+FILESYSTEM_DISK=local
+MAIL_MAILER=smtp
+MAIL_FROM_ADDRESS=noreply@example.com
+APP_LOCALE=pt_BR
+APP_FALLBACK_LOCALE=pt_BR
 ```
 
-### 2. Comandos de Diagnóstico
-```bash
-# Ver variáveis de ambiente
-railway vars
+⚠️ **IMPORTANTE**: Substitua `seu-projeto.railway.app` pela URL real!
 
-# Executar migrations manualmente
-railway run php artisan migrate --force
+## ✅ PASSO 3: AGUARDAR DEPLOY
 
-# Ver permissões do diretório
-railway run ls -la /var/www/html/storage
+- ⏱️ Tempo: 3-5 minutos
+- 📦 Build automático
+- 🚀 Deploy automático
 
-# Ver logs do Laravel
-railway run tail -f /var/www/html/storage/logs/laravel.log
+## ✅ PASSO 4: VERIFICAR SUCESSO
+
+### Nos Logs (Railway → Logs)
+Procure por:
+- ✅ `=== Application ready! ===`
+- ✅ `NOTICE: ready to handle connections`
+- ❌ Nenhuma mensagem de `ERROR` ou `Exception`
+
+### Acessar a Aplicação
+- ✅ Visite `https://seu-projeto.railway.app`
+- ✅ Deve carregar SEM erro 500
+- ✅ Status HTTP 200
+
+### Testar Funcionalidades
+- ✅ `/admin` - Painel administrativo
+- ✅ `/player/login` - Login de players
+- ✅ `/` - Página inicial
+
+## 🆘 SE NÃO FUNCIONAR
+
+### Verificar Logs Detalhados
+```
+Railway Dashboard → Service → Logs → Procurar por "ERROR"
 ```
 
-### 3. Problemas Comuns
-| Problema | Solução |
-|----------|---------|
-| `storage` sem permissão de escrita | Railway usará volume efêmero - configure volume persistente |
-| `database.sqlite` não existe | Entrypoint cria automaticamente |
-| Cache corrompido | Entrypoint limpa cache automaticamente |
-| APP_KEY faltando | Defina em Railway Variables |
+### Problemas Comuns
 
-## 📦 Variáveis de Ambiente Necessárias
+| Erro | Solução |
+|------|---------|
+| `No application encryption key` | Verificar `APP_KEY` em Variables |
+| Erro 500 genérico | Verificar se TODAS as variáveis estão em Variables |
+| `Database locked` | SQLite é efêmero, adicione Volume |
 
-No Railway Dashboard, defina:
+## 📚 DOCUMENTAÇÃO
+
+Consulte estes arquivos para mais detalhes:
+- `RAILWAY_ENVIRONMENT_VARIABLES.md` - Todas as variáveis explicadas
+- `DOCKERFILE_ENTRYPOINT_REVIEW.md` - O que foi corrigido
+
+## ✅ O QUE FOI CORRIGIDO
+
+- ✅ Dockerfile: removido composer install duplicado
+- ✅ entrypoint.sh: cria .env corretamente com Railway vars
+- ✅ Permissões: 775 em storage (correto para escrita)
+- ✅ Valores com espaços: adicionadas aspas ("LoY - CASADOS")
+- ✅ SQLite 3.45.1: compilado com session support
+- ✅ PHP 8.4: atualizado para compatibilidade
+
+---
+
+✅ **PRONTO PARA DEPLOY!** 🚀
 
 ```
 APP_NAME=LoY - CASADOS

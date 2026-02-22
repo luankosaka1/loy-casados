@@ -56,7 +56,6 @@ while [ ! -w /var/www/html/database ]; do
     sleep 1
 done
 
-composer install --no-dev --optimize-autoloader
 
 # Clear all caches (ignore errors)
 echo "Clearing caches..."
