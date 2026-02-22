@@ -3,6 +3,10 @@
 set -e
 
 echo "=== Laravel Container Startup ==="
+echo "Setting up permissions..."
+
+# Give full permissions to the entire application directory
+chmod -R 777 /var/www/html
 
 # Create cache directories with proper permissions first
 mkdir -p /var/www/html/storage/framework/cache
@@ -10,6 +14,16 @@ mkdir -p /var/www/html/storage/framework/sessions
 mkdir -p /var/www/html/storage/framework/views
 mkdir -p /var/www/html/storage/logs
 mkdir -p /var/www/html/bootstrap/cache
+
+# Set www-data as owner for web-accessible directories
+chown -R www-data:www-data /var/www/html/storage
+chown -R www-data:www-data /var/www/html/bootstrap/cache
+chown -R www-data:www-data /var/www/html/database
+
+# Ensure full permissions
+chmod -R 777 /var/www/html/storage
+chmod -R 777 /var/www/html/bootstrap/cache
+chmod -R 777 /var/www/html/database
 
 # Create .env file BEFORE any artisan commands
 if [ ! -f /var/www/html/.env ]; then

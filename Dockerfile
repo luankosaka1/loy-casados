@@ -85,18 +85,19 @@ RUN npm ci && npm run build
 # Run composer scripts after npm build
 RUN COMPOSER_MEMORY_LIMIT=-1 composer run-script post-install-cmd 2>/dev/null || true
 
-# Setup permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+# Setup permissions - give full access to all files
+RUN chmod -R 777 /var/www/html \
+    && chown -R www-data:www-data /var/www/html
 
 # Create all necessary directories with proper permissions
 RUN mkdir -p /var/www/html/storage/framework/cache \
     && mkdir -p /var/www/html/storage/framework/sessions \
     && mkdir -p /var/www/html/storage/framework/views \
     && mkdir -p /var/www/html/storage/logs \
+    && chmod -R 777 /var/www/html/storage \
+    && chmod -R 777 /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html/storage \
-    && chmod -R 775 /var/www/html/storage
+    && chown -R www-data:www-data /var/www/html/bootstrap/cache
 
 # Create SQLite database directory
 RUN mkdir -p /var/www/html/database && \
