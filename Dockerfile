@@ -7,10 +7,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     wget \
     git \
+    curl \
+    nodejs \
+    npm \
     zip \
     unzip \
-    curl \
     libpng-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libcurl4-openssl-dev \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
@@ -40,8 +45,9 @@ ENV PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/local/lib/pkgconfig
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 
-# Install PHP extensions
-RUN docker-php-ext-install \
+# Install PHP extensions - only essential ones
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_sqlite \
     mbstring \
@@ -51,15 +57,8 @@ RUN docker-php-ext-install \
     gd \
     intl \
     zip \
-    ctype \
-    curl \
     dom \
-    json \
-    openssl \
-    tokenizer \
-    xml \
-    fileinfo \
-    soap
+    xml
 
 # Enable Apache modules
 RUN a2enmod rewrite \
@@ -77,9 +76,14 @@ COPY . .
 # Create a temporary .env for build time (will be regenerated at runtime)
 RUN echo "APP_ENV=production\nAPP_DEBUG=false\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nDB_CONNECTION=sqlite" > .env
 
-# Install dependencies
-RUN composer install --optimize-autoloader --no-dev --no-interaction
-RUN npm install && npm run build
+# Install PHP dependencies with increased memory limit
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader --no-dev --no-interaction --no-scripts
+
+# Install Node dependencies
+RUN npm ci && npm run build
+
+# Run composer scripts after npm build
+RUN COMPOSER_MEMORY_LIMIT=-1 composer run-script post-install-cmd 2>/dev/null || true
 
 # Setup permissions
 RUN chown -R www-data:www-data /var/www/html \
