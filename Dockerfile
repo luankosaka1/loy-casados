@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
+    libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Compile and install newer SQLite from source with session support
@@ -40,7 +41,25 @@ ENV APP_ENV=production
 ENV APP_DEBUG=false
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo pdo_sqlite mbstring exif pcntl bcmath gd intl zip
+RUN docker-php-ext-install \
+    pdo \
+    pdo_sqlite \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    intl \
+    zip \
+    ctype \
+    curl \
+    dom \
+    json \
+    openssl \
+    tokenizer \
+    xml \
+    fileinfo \
+    soap
 
 # Enable Apache modules
 RUN a2enmod rewrite \
