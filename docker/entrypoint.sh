@@ -4,8 +4,6 @@ set -e
 
 echo "=== Laravel Container Startup ==="
 
-# Create supervisor log directory
-mkdir -p /var/log/supervisor
 
 # Create cache directories with proper permissions first
 mkdir -p /var/www/html/storage/framework/cache
@@ -79,8 +77,8 @@ echo "Optimizing application..."
 php artisan optimize
 
 echo "=== Application ready! ==="
-echo "Starting supervisor..."
+echo "Starting Apache..."
 
-# Start supervisor
-exec /usr/bin/supervisord -c /etc/supervisord.conf
+# Start Apache in foreground
+exec apache2-foreground
 

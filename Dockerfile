@@ -1,16 +1,20 @@
-FROM php:8.4-fpm-alpine
+FROM php:8.4-apache
 
-# Install build dependencies
-RUN apk add --no-cache --virtual .build-deps \
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     gcc \
     g++ \
-    make \
-    autoconf \
-    automake \
-    libtool \
-    pkgconfig \
     wget \
-    tcl-dev
+    git \
+    zip \
+    unzip \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Compile and install newer SQLite from source with session support
 RUN cd /tmp \
@@ -25,27 +29,9 @@ RUN cd /tmp \
     && rm -rf /tmp/sqlite*
 
 # Update library cache and verify SQLite
-RUN ldconfig /usr/lib 2>/dev/null || true \
+RUN ldconfig \
     && sqlite3 --version
 
-# Install system dependencies (keep sqlite for compatibility)
-RUN apk add --no-cache \
-    nginx \
-    supervisor \
-    nodejs \
-    npm \
-    git \
-    zip \
-    unzip \
-    curl \
-    libpng-dev \
-    oniguruma-dev \
-    libxml2-dev \
-    openssl \
-    sqlite-dev \
-    icu-dev \
-    libzip-dev \
-    zlib-dev
 
 # Set PKG_CONFIG_PATH to find the new SQLite
 ENV PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/local/lib/pkgconfig
@@ -56,11 +42,9 @@ ENV APP_DEBUG=false
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_sqlite mbstring exif pcntl bcmath gd intl zip
 
-# Verify PHP SQLite version
-RUN php -r "echo 'PHP SQLite Version: ' . SQLite3::version()['versionString'] . PHP_EOL;"
-
-# Clean up build dependencies
-RUN apk del .build-deps
+# Enable Apache modules
+RUN a2enmod rewrite \
+    && a2enmod headers
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -97,12 +81,10 @@ RUN mkdir -p /var/www/html/database && \
     chown -R www-data:www-data /var/www/html/database && \
     chmod -R 775 /var/www/html/database
 
-# Copy nginx config
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/default.conf /etc/nginx/http.d/default.conf
-
-# Copy supervisor config
-COPY docker/supervisord.conf /etc/supervisord.conf
+# Copy Apache config
+COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
+RUN a2dissite 000-default 2>/dev/null || true \
+    && a2ensite 000-default
 
 # Copy entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -110,5 +92,5 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/usr/local/bin/entrypoint.sh"]
 
