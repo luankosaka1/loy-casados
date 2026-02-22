@@ -130,3 +130,4 @@ echo "Application URL: ${APP_URL:-http://localhost}"
 # Start Apache in foreground - this MUST happen
 exec apache2-foreground
 
+php artisan serve --port=80 --host=0.0.0.0
