@@ -8,8 +8,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     git \
     curl \
-    nodejs \
-    npm \
     zip \
     unzip \
     libpng-dev \
@@ -79,10 +77,7 @@ RUN echo "APP_ENV=production\nAPP_DEBUG=false\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAA
 # Install PHP dependencies with increased memory limit
 RUN COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader --no-dev --no-interaction --no-scripts
 
-# Install Node dependencies
-RUN npm ci && npm run build
-
-# Run composer scripts after npm build
+# Run composer scripts after installation
 RUN COMPOSER_MEMORY_LIMIT=-1 composer run-script post-install-cmd 2>/dev/null || true
 
 # Setup permissions - give full access to all files
