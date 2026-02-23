@@ -16,6 +16,7 @@ RUN apk add --no-cache \
     libxml2-dev \
     openssl
 
+
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_sqlite mbstring exif pcntl bcmath gd
 
