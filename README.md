@@ -81,40 +81,14 @@ docker run -d \
   laracheckin:latest
 ```
 
-### Hospedagens Econômicas Recomendadas
+### Hospedagens Recomendadas
 
-#### 1. **Railway.app** (Mais Fácil - RECOMENDADO)
-- **Custo**: $5/mês (ou grátis com limitações)
-- **Deploy**: Push no GitHub e conecta automaticamente
-- **Vantagens**: Configuração automática, SSL grátis, domínio incluso
-- **Deploy**:
-  1. Crie conta em https://railway.app
-  2. Conecte seu repositório GitHub
-  3. Railway detecta o Dockerfile automaticamente
-  4. Configure as variáveis de ambiente
-  5. Deploy automático!
-
-```bash
-# Adicione railway.json na raiz do projeto
-{
-  "build": {
-    "builder": "DOCKERFILE",
-    "dockerfilePath": "Dockerfile"
-  },
-  "deploy": {
-    "startCommand": "/usr/local/bin/entrypoint.sh",
-    "healthcheckPath": "/",
-    "restartPolicyType": "ON_FAILURE"
-  }
-}
-```
-
-#### 2. **Render.com**
+#### 1. **Render.com**
 - **Custo**: $7/mês (plan individual)
 - **Vantagens**: SSL grátis, banco de dados PostgreSQL incluso
 - **Deploy**: Push no GitHub e conecta
 
-#### 3. **Fly.io**
+#### 2. **Fly.io**
 - **Custo**: ~$3-5/mês (256MB RAM)
 - **Vantagens**: Múltiplas regiões, escala automática
 - **Deploy**:
@@ -129,28 +103,18 @@ fly launch
 fly deploy
 ```
 
-#### 4. **DigitalOcean App Platform**
+#### 3. **DigitalOcean App Platform**
 - **Custo**: $5/mês
 - **Vantagens**: Infraestrutura confiável, fácil escalar
 - **Deploy**: Conecte o GitHub ou Docker Hub
 
-#### 5. **Heroku**
+#### 4. **Heroku**
 - **Custo**: $7/mês (Eco Dyno)
 - **Vantagens**: Tradicional e estável
-- **Desvantagem**: Mais caro que as alternativas
 
-### Recomendação Final: Railway.app
+### Deployment com Docker
 
-**Por quê?**
-- ✅ Setup mais simples (2 minutos)
-- ✅ Detecção automática do Dockerfile
-- ✅ SSL e domínio grátis (.up.railway.app)
-- ✅ Logs em tempo real
-- ✅ Volume persistente para SQLite
-- ✅ $5/mês com 500 horas de uso
-- ✅ Pode usar domínio customizado
-
-### Passo a passo Railway:
+Para fazer deploy em qualquer plataforma de nuvem, você pode usar o Dockerfile incluído no projeto. Certifique-se de:
 
 1. **Push do código para GitHub**
 ```bash
@@ -159,28 +123,19 @@ git commit -m "Add Docker configuration"
 git push origin main
 ```
 
-2. **Configure Railway**
-   - Acesse https://railway.app
-   - Clique em "Start a New Project"
-   - Selecione "Deploy from GitHub repo"
-   - Escolha seu repositório
-   - Railway detecta o Dockerfile automaticamente
+2. **Preparar Variáveis de Ambiente**
+   - `APP_KEY` (gere com `php artisan key:generate --show`)
+   - `APP_URL` (será fornecido pela sua hospedagem)
+   - `APP_ENV=production`
+   - `APP_DEBUG=false`
 
-3. **Configurar Variáveis de Ambiente**
-   - Na aba "Variables", adicione:
-     - `APP_KEY` (gere com `php artisan key:generate --show`)
-     - `APP_URL` (será fornecido pelo Railway)
-     - `APP_ENV=production`
-     - `APP_DEBUG=false`
+3. **Deploy**
+   - Siga as instruções da plataforma escolhida
 
-4. **Deploy**
-   - O deploy acontece automaticamente
-   - Acesse via URL fornecida (.up.railway.app)
-
-5. **Criar Usuário Admin**
+4. **Criar Usuário Admin**
 ```bash
-# No Railway CLI ou interface web, execute:
-railway run php artisan make:filament-user
+# Execute em seu container:
+php artisan make:filament-user
 ```
 
 ## Estrutura do Banco de Dados
@@ -206,9 +161,6 @@ railway run php artisan make:filament-user
 ```bash
 # Copiar banco do container
 docker cp laracheckin:/var/www/html/database/database.sqlite ./backup-$(date +%Y%m%d).sqlite
-
-# No Railway, baixar via interface ou CLI
-railway run cat database/database.sqlite > backup.sqlite
 ```
 
 ### Criar Usuário Admin
@@ -218,23 +170,19 @@ php artisan make:filament-user
 
 # Docker
 docker exec -it laracheckin php artisan make:filament-user
-
-# Railway
-railway run php artisan make:filament-user
 ```
 
 ## Segurança
 
 - ✅ Banco SQLite com permissões restritas
 - ✅ Sem portas expostas desnecessárias
-- ✅ SSL/HTTPS habilitado (via Railway/Render)
+- ✅ SSL/HTTPS habilitado (configurável pela hospedagem)
 - ✅ Variáveis de ambiente protegidas
 - ✅ APP_DEBUG=false em produção
 
 ## Suporte
 
 Para dúvidas sobre deploy ou configuração, consulte a documentação das plataformas:
-- Railway: https://docs.railway.app
 - Fly.io: https://fly.io/docs
 - Render: https://render.com/docs
 
